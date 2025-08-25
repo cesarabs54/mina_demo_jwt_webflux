@@ -39,3 +39,9 @@ logging:
     org.springframework.security: DEBUG
     org.springframework.web: DEBUG
     reactor.netty.http.server.HttpServerOperations: DEBUG
+
+bezkoder:
+  app:
+    jwtSecret: TuClaveSuperSecreta1234567890abcdef
+    jwtExpirationMs: 3600000 # 1 hora
+    jwtRefreshExpirationMs: 604800000 # 7 días

@@ -38,11 +38,11 @@ public record RefreshTokenUseCase(RefreshTokenRepository refreshTokenRepository,
         });
     }
 
-    public Mono<Integer> deleteByUsername(String username) {
+    public Mono<Void> deleteByUsername(String username) {
         return userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.error(
                         new RuntimeException(
                                 "Error: Username not found - " + username)))
-                .flatMap(refreshTokenRepository::deleteByUser);
+                .flatMap(user -> refreshTokenRepository.deleteByUser(user).then());
     }
 }
