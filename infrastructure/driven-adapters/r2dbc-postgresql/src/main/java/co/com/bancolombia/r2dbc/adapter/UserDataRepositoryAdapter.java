@@ -4,6 +4,7 @@ import co.com.bancolombia.model.entities.User;
 import co.com.bancolombia.model.gateways.UserRepository;
 import co.com.bancolombia.r2dbc.mappers.UserMapper;
 import co.com.bancolombia.r2dbc.repositories.UserDataRepository;
+import co.com.bancolombia.r2dbc.util.IdGeneratorUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,7 +25,13 @@ public class UserDataRepositoryAdapter implements UserRepository {
 
     @Override
     public Mono<User> save(User user) {
+        if (user.getUserId() == null) return repository.save(mapper.toData(user)).map(mapper::toModel);
+
+        var generatedId = IdGeneratorUtil.generateDefaultUUID();
+        user.setUserId(generatedId);
+
         return repository.save(mapper.toData(user)).map(mapper::toModel);
+
     }
 
     @Override

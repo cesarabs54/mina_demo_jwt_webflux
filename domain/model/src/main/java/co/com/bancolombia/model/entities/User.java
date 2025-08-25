@@ -2,6 +2,7 @@ package co.com.bancolombia.model.entities;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,7 +16,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class User {
 
-    private String userId;
+    private UUID userId;
     private String username;
     private String name;
     private String email;

@@ -35,7 +35,7 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
                                     .map(tokens -> new AuthResponse(
                                             tokens.getT1(),
                                             tokens.getT2(),
-                                            user.getId(),
+                                            user.getUserId().toString(),
                                             user.getUsername(),
                                             user.getName(),
                                             user.getEmail(),
