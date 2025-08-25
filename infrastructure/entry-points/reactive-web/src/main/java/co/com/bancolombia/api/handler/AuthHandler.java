@@ -7,6 +7,7 @@ import co.com.bancolombia.api.dto.requests.TokenRefreshRequest;
 import co.com.bancolombia.api.dto.responses.JwtResponse;
 import co.com.bancolombia.api.dto.responses.MessageResponse;
 import co.com.bancolombia.api.exception.TokenRefreshException;
+import co.com.bancolombia.api.util.RequestValidator;
 import co.com.bancolombia.model.dtos.AuthRequest;
 import co.com.bancolombia.model.dtos.RefreshAccessTokenRequest;
 import co.com.bancolombia.model.dtos.RegisterRequest;
@@ -27,6 +28,7 @@ import reactor.core.publisher.Mono;
 public class AuthHandler {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
+    private final RequestValidator requestValidator;
     private final RegisterUserUseCase registerUserUseCase;
     private final RefreshAccessTokenUseCase refreshTokenUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
@@ -34,6 +36,7 @@ public class AuthHandler {
 
     public Mono<ServerResponse> authenticateUser(ServerRequest request) {
         return request.bodyToMono(LoginRequest.class)
+                .flatMap(requestValidator::validate) // 👉 aquí validamos
                 .map(loginRequest -> objectMapper.convertValue(loginRequest, AuthRequest.class))
                 .flatMap(authRequest -> Mono.fromCallable(() ->
                         objectMapper.convertValue(authenticateUserUseCase.execute(authRequest),
@@ -45,6 +48,7 @@ public class AuthHandler {
 
     public Mono<ServerResponse> registerUser(ServerRequest request) {
         return request.bodyToMono(SignUpRequest.class)
+                .flatMap(requestValidator::validate) // 👉 aquí validamos
                 .map(signUpRequest -> objectMapper.convertValue(signUpRequest,
                         RegisterRequest.class))
                 .doOnNext(registerUserUseCase::execute)
@@ -55,6 +59,7 @@ public class AuthHandler {
 
     public Mono<ServerResponse> refreshToken(ServerRequest request) {
         return request.bodyToMono(TokenRefreshRequest.class)
+                .flatMap(requestValidator::validate) // 👉 aquí validamos
                 .flatMap(req -> {
                     var domainRequest = objectMapper.convertValue(req,
                             RefreshAccessTokenRequest.class);
@@ -69,6 +74,7 @@ public class AuthHandler {
 
     public Mono<ServerResponse> logoutUser(ServerRequest request) {
         return request.bodyToMono(LogOutRequest.class)
+                .flatMap(requestValidator::validate) // 👉 aquí validamos
                 .doOnNext(req -> logoutUserUseCase.execute(req.userId()))
                 .then(ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
