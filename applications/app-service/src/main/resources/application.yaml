@@ -5,6 +5,9 @@ spring:
     name: "demo_jwt"
   devtools:
     add-properties: false
+  http:
+    codecs:
+      log-request-details: false
   h2:
     console:
       enabled: true
@@ -36,9 +39,9 @@ logging:
   level:
     org.springframework.data.r2dbc: DEBUG
     org.springframework.r2dbc: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-    reactor.netty.http.server.HttpServerOperations: DEBUG
+    org.springframework.security: INFO
+    org.springframework.web: INFO
+    reactor.netty.http.server.HttpServerOperations: INFO
 
 bezkoder:
   app:

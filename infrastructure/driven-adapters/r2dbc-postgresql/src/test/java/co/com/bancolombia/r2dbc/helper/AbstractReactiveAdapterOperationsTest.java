@@ -9,8 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.domain.Example;
-import org.springframework.data.r2dbc.repository.R2dbcRepository;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -20,7 +19,7 @@ class AbstractReactiveAdapterOperationsTest {
     private DummyRepository repository;
     private ObjectMapper mapper;
     private AbstractReactiveAdapterOperations
-        <DummyEntity, DummyData, String, DummyRepository> operations;
+            <DummyEntity, DummyData, String, DummyRepository> operations;
 
     @BeforeEach
     void setUp() {
@@ -75,7 +74,7 @@ class AbstractReactiveAdapterOperationsTest {
         DummyData data = new DummyData("1", "test");
 
         when(mapper.map(entity, DummyData.class)).thenReturn(data);
-        when(repository.findAll(any(Example.class))).thenReturn(Flux.just(data));
+        when(repository.findAll()).thenReturn(Flux.just(data));
 
         StepVerifier.create(operations.findByExample(entity)).expectNext(entity).verifyComplete();
     }
@@ -129,48 +128,28 @@ class AbstractReactiveAdapterOperationsTest {
     }
 
 
-    interface DummyRepository extends R2dbcRepository<DummyData, String> {
+    interface DummyRepository extends ReactiveCrudRepository<DummyData, String> {
 
     }
 
-    static class DummyEntity {
-
-        private final String id;
-        private final String name;
-
-        public DummyEntity(String id, String name) {
-            this.id = id;
-            this.name = name;
-        }
+    record DummyEntity(String id, String name) {
 
         public static DummyEntity toEntity(DummyData data) {
-            return new DummyEntity(data.getId(), data.getName());
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
+                return new DummyEntity(data.getId(), data.getName());
             }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-            DummyEntity that = (DummyEntity) o;
-            return id.equals(that.id) && name.equals(that.name);
-        }
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(id, name);
-        }
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                DummyEntity that = (DummyEntity) o;
+                return id.equals(that.id) && name.equals(that.name);
+            }
+
     }
 
     static class DummyData {

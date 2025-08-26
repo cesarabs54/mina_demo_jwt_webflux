@@ -30,14 +30,14 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
     public Mono<User> execute(RegisterRequest request) {
         return userRepository.existsByUsername(request.username())
                 .flatMap(existsUsername -> {
-                    if (existsUsername) {
+                    if (Boolean.TRUE.equals(existsUsername)) {
                         return Mono.error(
                                 new IllegalArgumentException("El nombre de usuario ya existe"));
                     }
                     return userRepository.existsByEmail(request.email());
                 })
                 .flatMap(existsEmail -> {
-                    if (existsEmail) {
+                    if (Boolean.TRUE.equals(existsEmail)) {
                         return Mono.error(new IllegalArgumentException("El correo ya está en uso"));
                     }
 
@@ -71,7 +71,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                                                         encodedPassword,
                                                         new HashSet<>(roles)
                                                 );
-                                                return userRepository.save(newUser);
+                                                return userRepository.save(newUser).log();
                                             })
                             );
                 });

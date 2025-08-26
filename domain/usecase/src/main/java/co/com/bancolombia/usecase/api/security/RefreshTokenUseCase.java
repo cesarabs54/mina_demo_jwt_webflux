@@ -6,10 +6,15 @@ import co.com.bancolombia.model.gateways.RefreshTokenRepository;
 import co.com.bancolombia.model.gateways.UserRepository;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
-public record RefreshTokenUseCase(RefreshTokenRepository refreshTokenRepository,
-                                  UserRepository userRepository, long refreshTokenDurationMs) {
+@RequiredArgsConstructor
+public class RefreshTokenUseCase {
+
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final UserRepository userRepository;
+    private final long refreshTokenDurationMs;
 
     public Mono<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
