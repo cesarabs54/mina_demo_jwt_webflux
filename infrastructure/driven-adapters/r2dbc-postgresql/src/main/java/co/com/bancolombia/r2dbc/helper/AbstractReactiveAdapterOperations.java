@@ -5,12 +5,13 @@ import java.lang.reflect.ParameterizedType;
 import java.util.function.Function;
 import org.reactivecommons.utils.ObjectMapper;
 import org.springframework.data.domain.Example;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import org.springframework.data.repository.reactive.ReactiveCrudRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @SuppressWarnings("all")
-public abstract class AbstractReactiveAdapterOperations<E, D, I, R extends ReactiveCrudRepository<D, I>> {
+public abstract class AbstractReactiveAdapterOperations<E, D, I, R extends R2dbcRepository<D, I>> {
 
     private final Class<D> dataClass;
     private final Function<D, E> toEntityFn;

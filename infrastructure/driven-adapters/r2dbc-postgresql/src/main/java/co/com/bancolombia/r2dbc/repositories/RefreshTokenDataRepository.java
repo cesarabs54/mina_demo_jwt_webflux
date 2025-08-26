@@ -2,11 +2,11 @@ package co.com.bancolombia.r2dbc.repositories;
 
 import co.com.bancolombia.r2dbc.entities.RefreshTokenData;
 import java.util.UUID;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Mono;
 
 public interface RefreshTokenDataRepository extends
-        ReactiveCrudRepository<RefreshTokenData, String> {
+        R2dbcRepository<RefreshTokenData, String> {
 
     Mono<RefreshTokenData> findByToken(String token);
 

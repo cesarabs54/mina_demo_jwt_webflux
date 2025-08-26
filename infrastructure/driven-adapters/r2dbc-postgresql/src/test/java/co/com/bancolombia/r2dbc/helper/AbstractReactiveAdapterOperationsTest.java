@@ -9,7 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.reactivecommons.utils.ObjectMapper;
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import org.springframework.data.r2dbc.repository.R2dbcRepository;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -128,27 +128,27 @@ class AbstractReactiveAdapterOperationsTest {
     }
 
 
-    interface DummyRepository extends ReactiveCrudRepository<DummyData, String> {
+    interface DummyRepository extends R2dbcRepository<DummyData, String> {
 
     }
 
     record DummyEntity(String id, String name) {
 
         public static DummyEntity toEntity(DummyData data) {
-                return new DummyEntity(data.getId(), data.getName());
-            }
+            return new DummyEntity(data.getId(), data.getName());
+        }
 
-            @Override
-            public boolean equals(Object o) {
-                if (this == o) {
-                    return true;
-                }
-                if (o == null || getClass() != o.getClass()) {
-                    return false;
-                }
-                DummyEntity that = (DummyEntity) o;
-                return id.equals(that.id) && name.equals(that.name);
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
             }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            DummyEntity that = (DummyEntity) o;
+            return id.equals(that.id) && name.equals(that.name);
+        }
 
     }
 
