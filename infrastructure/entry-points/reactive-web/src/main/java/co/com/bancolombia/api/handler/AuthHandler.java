@@ -49,18 +49,20 @@ public class AuthHandler {
     public Mono<ServerResponse> registerUser(ServerRequest request) {
         return request.bodyToMono(SignUpRequest.class)
                 .flatMap(requestValidator::validate)
-                .map(signUpRequest -> objectMapper.convertValue(signUpRequest, RegisterRequest.class))
-                .doOnNext(registerUserUseCase::execute)
-                .then(ServerResponse.ok()
+                .map(signUpRequest -> objectMapper.convertValue(signUpRequest,
+                        RegisterRequest.class))
+                .flatMap(registerUserUseCase::execute)
+                .flatMap(user -> ServerResponse.ok() // ✅ Cambiar .then() por .flatMap()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(new MessageResponse("Usuario creado Correctamente")));
+                        .bodyValue(new MessageResponse("Usuario creado correctamente")));
     }
 
     public Mono<ServerResponse> refreshToken(ServerRequest request) {
         return request.bodyToMono(TokenRefreshRequest.class)
                 .flatMap(requestValidator::validate)
                 .flatMap(req -> {
-                    var domainRequest = objectMapper.convertValue(req, RefreshAccessTokenRequest.class);
+                    var domainRequest = objectMapper.convertValue(req,
+                            RefreshAccessTokenRequest.class);
                     return Mono.justOrEmpty(refreshAccessTokenUseCase.execute(domainRequest))
                             .switchIfEmpty(Mono.error(new TokenRefreshException(req.refreshToken(),
                                     "Refresh token no está en la base de datos!")));
@@ -73,7 +75,8 @@ public class AuthHandler {
     public Mono<ServerResponse> logoutUser(ServerRequest request) {
         return request.bodyToMono(LogOutRequest.class)
                 .flatMap(requestValidator::validate)
-                .doOnNext(req -> logoutUserUseCase.execute(req.userId()))
+                .flatMap(req -> logoutUserUseCase.execute(
+                        req.userId())) // Cambiado de doOnNext a flatMap
                 .then(ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(new MessageResponse("Log out successful!")));

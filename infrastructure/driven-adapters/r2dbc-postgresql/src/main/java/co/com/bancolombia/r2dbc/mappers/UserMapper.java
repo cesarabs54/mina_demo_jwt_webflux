@@ -13,7 +13,6 @@ public interface UserMapper {
     @Mapping(source = "name", target = "name")
     @Mapping(source = "email", target = "email")
     @Mapping(source = "password", target = "password")
-    @Mapping(source = "roles", target = "roles")
     User toModel(UserData data);
     UserData toData(User model);
 }

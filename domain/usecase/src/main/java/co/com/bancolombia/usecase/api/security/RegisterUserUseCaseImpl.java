@@ -19,7 +19,8 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
     private final RoleRepository roleRepository;
     private final PasswordEncoderService passwordEncoderService;
 
-    public RegisterUserUseCaseImpl(UserRepository userRepository, RoleRepository roleRepository,
+    public RegisterUserUseCaseImpl(UserRepository userRepository,
+            RoleRepository roleRepository,
             PasswordEncoderService passwordEncoderService) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
@@ -51,32 +52,23 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                                 .flux();
                     } else {
                         rolesFlux = Flux.fromIterable(strRoles)
-                                .flatMap(role -> {
-                                    ERole eRole = ERole.valueOf(role);
-                                    return roleRepository.findByName(eRole)
-                                            .switchIfEmpty(Mono.error(new IllegalStateException(
-                                                    "Rol no encontrado: " + role)));
-                                });
+                                .flatMap(
+                                        roleStr -> roleRepository.findByName(ERole.valueOf(roleStr))
+                                                .switchIfEmpty(Mono.error(new IllegalStateException(
+                                                        "Rol no encontrado: " + roleStr))));
                     }
 
                     return rolesFlux.collectList()
-                            .flatMap(roles ->
-                                    passwordEncoderService.encode(request.password())
-                                            .flatMap(encodedPassword -> {
-                                                User newUser = new User(
-                                                        null,
-                                                        request.username(),
-                                                        request.name(),
-                                                        request.email(),
-                                                        encodedPassword,
-                                                        new HashSet<>(roles)
-                                                );
-                                                return userRepository.save(newUser).log();
-                                            })
-                            );
+                            .flatMap(roles -> passwordEncoderService.encode(request.password())
+                                    .map(encodedPassword -> new User(
+                                            null,
+                                            request.username(),
+                                            request.name(),
+                                            request.email(),
+                                            encodedPassword,
+                                            new HashSet<>(roles)
+                                    )))
+                            .flatMap(userRepository::save); // ✅ AGREGAR ESTA LÍNEA CRUCIAL
                 });
     }
-
 }
-
-

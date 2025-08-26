@@ -33,8 +33,6 @@ public class UserData implements Persistable<UUID> {
 
     private String password;
 
-    private Set<RoleData> roles = new HashSet<>();
-
     @Transient
     @SuppressWarnings("all")
     private transient boolean isNew = true;
