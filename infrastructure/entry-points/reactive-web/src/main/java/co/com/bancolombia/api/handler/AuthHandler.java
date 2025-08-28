@@ -38,13 +38,13 @@ public class AuthHandler {
         return request.bodyToMono(LoginRequest.class)
                 .flatMap(requestValidator::validate)
                 .map(loginRequest -> objectMapper.convertValue(loginRequest, AuthRequest.class))
-                .flatMap(authRequest -> Mono.fromCallable(() ->
-                        objectMapper.convertValue(authenticateUserUseCase.execute(authRequest),
-                                JwtResponse.class)))
+                .flatMap(authenticateUserUseCase::execute) // <-- Ejecuta el caso de uso
+                .map(authResponse -> objectMapper.convertValue(authResponse, JwtResponse.class))
                 .flatMap(jwtResponse -> ServerResponse.ok()
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(jwtResponse));
     }
+
 
     public Mono<ServerResponse> registerUser(ServerRequest request) {
         return request.bodyToMono(SignUpRequest.class)

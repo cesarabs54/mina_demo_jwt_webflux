@@ -60,8 +60,10 @@ public class UseCasesConfig {
 
     @Bean
     public AuthenticateUserUseCase authenticateUserUseCase(UserRepository userRepository,
+            RoleRepository roleRepository,
             JwtGateway jwtGateway, PasswordEncoderService passwordEncoderService) {
-        return new AuthenticateUserUseCaseImpl(userRepository, jwtGateway, passwordEncoderService);
+        return new AuthenticateUserUseCaseImpl(userRepository, roleRepository, jwtGateway,
+                passwordEncoderService);
     }
 
     @Bean

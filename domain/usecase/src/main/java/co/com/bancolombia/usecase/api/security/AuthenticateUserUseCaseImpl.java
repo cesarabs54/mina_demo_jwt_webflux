@@ -4,8 +4,10 @@ import co.com.bancolombia.model.dtos.AuthRequest;
 import co.com.bancolombia.model.dtos.AuthResponse;
 import co.com.bancolombia.model.gateways.JwtGateway;
 import co.com.bancolombia.model.gateways.PasswordEncoderService;
+import co.com.bancolombia.model.gateways.RoleRepository;
 import co.com.bancolombia.model.gateways.UserRepository;
 import co.com.bancolombia.usecase.AuthenticateUserUseCase;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import reactor.core.publisher.Mono;
 
@@ -13,6 +15,7 @@ import reactor.core.publisher.Mono;
 public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final JwtGateway jwtGateway;
     private final PasswordEncoderService passwordEncoderService;
 
@@ -20,29 +23,35 @@ public class AuthenticateUserUseCaseImpl implements AuthenticateUserUseCase {
     public Mono<AuthResponse> execute(AuthRequest request) {
         return userRepository.findByUsername(request.username())
                 .switchIfEmpty(Mono.error(
-                        new RuntimeException(
-                                "Error: Username not found - " + request.username()))
+                        new RuntimeException("Error: Username not found - " + request.username()))
                 )
                 .flatMap(user -> passwordEncoderService.matches(request.password(),
                                 user.getPassword())
                         .flatMap(matches -> {
-                            if (!matches) {
-                                return Mono.error(new RuntimeException(
-                                        "Error: Username not found - " + request.username()));
+                            if (Boolean.FALSE.equals(matches)) {
+                                return Mono.error(
+                                        new RuntimeException("Error: Invalid credentials"));
                             }
-                            return jwtGateway.generateAccessToken(user)
-                                    .zipWith(jwtGateway.generateRefreshToken(user))
-                                    .map(tokens -> new AuthResponse(
-                                            tokens.getT1(),
-                                            tokens.getT2(),
-                                            user.getUserId().toString(),
-                                            user.getUsername(),
-                                            user.getName(),
-                                            user.getEmail(),
-                                            user.getRolesAsString()
-                                    ));
+
+                            // ✅ Recuperamos roles y los asignamos al user
+                            return roleRepository.findByUserId(user.getUserId())
+                                    .collect(Collectors.toSet())
+                                    .flatMap(roles -> {
+                                        user.setRoles(roles);
+                                        // ✅ Generamos tokens
+                                        return jwtGateway.generateAccessToken(user)
+                                                .zipWith(jwtGateway.generateRefreshToken(user))
+                                                .map(tokens -> new AuthResponse(
+                                                        tokens.getT1(),
+                                                        tokens.getT2(),
+                                                        user.getUserId().toString(),
+                                                        user.getUsername(),
+                                                        user.getName(),
+                                                        user.getEmail(),
+                                                        user.getRolesAsString()
+                                                ));
+                                    });
                         })
                 );
     }
-
 }
