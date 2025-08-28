@@ -50,6 +50,9 @@ public class AuthorizationJwt {
                 .authorizeExchange(auth -> auth
                         .pathMatchers("/auth/**", "/test/**", "/configuration/**", "/actuator/info")
                         .permitAll()
+                        .pathMatchers("/v3/api-docs", "/webjars/**", "/swagger-ui/**",
+                                "/v3/api-docs/**")
+                        .permitAll()
                         .anyExchange().authenticated()
                 )
                 // Aquí inyectas tu filtro JWT personalizado
