@@ -48,3 +48,10 @@ bezkoder:
     jwtSecret: TuClaveSuperSecreta1234567890abcdef
     jwtExpirationMs: 3600000 # 1 hora
     jwtRefreshExpirationMs: 604800000 # 7 días
+
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+  packages-to-scan: co.com.bancolombia.api
