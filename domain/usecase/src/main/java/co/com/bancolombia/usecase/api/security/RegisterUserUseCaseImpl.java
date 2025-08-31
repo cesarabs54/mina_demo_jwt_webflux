@@ -1,6 +1,6 @@
 package co.com.bancolombia.usecase.api.security;
 
-import co.com.bancolombia.model.dtos.RegisterRequest;
+import co.com.bancolombia.model.dtos.RegisterCommand;
 import co.com.bancolombia.model.entities.Role;
 import co.com.bancolombia.model.entities.User;
 import co.com.bancolombia.model.enums.ERole;
@@ -28,7 +28,7 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
     }
 
     @Override
-    public Mono<User> execute(RegisterRequest request) {
+    public Mono<User> execute(RegisterCommand request) {
         return userRepository.existsByUsername(request.username())
                 .flatMap(existsUsername -> {
                     if (Boolean.TRUE.equals(existsUsername)) {

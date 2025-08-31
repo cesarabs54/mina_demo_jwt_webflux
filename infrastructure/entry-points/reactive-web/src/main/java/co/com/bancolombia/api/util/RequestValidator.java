@@ -14,11 +14,10 @@ public class RequestValidator {
 
     private final Validator validator;
 
-
     public <T> Mono<T> validate(T request) {
         Set<ConstraintViolation<T>> violations = validator.validate(request);
         if (!violations.isEmpty()) {
-            throw new ConstraintViolationException(violations);
+            return Mono.error(new ConstraintViolationException(violations));
         }
         return Mono.just(request);
     }

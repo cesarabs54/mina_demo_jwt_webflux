@@ -1,5 +1,7 @@
 package co.com.bancolombia.api.handler;
 
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+
 import co.com.bancolombia.api.dto.requests.LogOutRequest;
 import co.com.bancolombia.api.dto.requests.LoginRequest;
 import co.com.bancolombia.api.dto.requests.SignUpRequest;
@@ -10,14 +12,13 @@ import co.com.bancolombia.api.exception.TokenRefreshException;
 import co.com.bancolombia.api.util.RequestValidator;
 import co.com.bancolombia.model.dtos.AuthRequest;
 import co.com.bancolombia.model.dtos.RefreshAccessTokenRequest;
-import co.com.bancolombia.model.dtos.RegisterRequest;
+import co.com.bancolombia.model.dtos.RegisterCommand;
 import co.com.bancolombia.usecase.AuthenticateUserUseCase;
 import co.com.bancolombia.usecase.LogoutUserUseCase;
 import co.com.bancolombia.usecase.RegisterUserUseCase;
 import co.com.bancolombia.usecase.api.security.RefreshAccessTokenUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
@@ -41,7 +42,7 @@ public class AuthHandler {
                 .flatMap(authenticateUserUseCase::execute) // <-- Ejecuta el caso de uso
                 .map(authResponse -> objectMapper.convertValue(authResponse, JwtResponse.class))
                 .flatMap(jwtResponse -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .bodyValue(jwtResponse));
     }
 
@@ -50,10 +51,10 @@ public class AuthHandler {
         return request.bodyToMono(SignUpRequest.class)
                 .flatMap(requestValidator::validate)
                 .map(signUpRequest -> objectMapper.convertValue(signUpRequest,
-                        RegisterRequest.class))
+                        RegisterCommand.class))
                 .flatMap(registerUserUseCase::execute)
                 .flatMap(user -> ServerResponse.ok() // ✅ Cambiar .then() por .flatMap()
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .bodyValue(new MessageResponse("Usuario creado correctamente")));
     }
 
@@ -68,7 +69,7 @@ public class AuthHandler {
                                     "Refresh token no está en la base de datos!")));
                 })
                 .flatMap(token -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .bodyValue(token));
     }
 
@@ -78,7 +79,7 @@ public class AuthHandler {
                 .flatMap(req -> logoutUserUseCase.execute(
                         req.userId())) // Cambiado de doOnNext a flatMap
                 .then(ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON)
                         .bodyValue(new MessageResponse("Log out successful!")));
     }
 }
