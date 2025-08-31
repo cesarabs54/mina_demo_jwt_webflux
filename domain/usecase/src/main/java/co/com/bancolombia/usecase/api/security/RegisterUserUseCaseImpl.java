@@ -52,10 +52,23 @@ public class RegisterUserUseCaseImpl implements RegisterUserUseCase {
                                 .flux();
                     } else {
                         rolesFlux = Flux.fromIterable(strRoles)
-                                .flatMap(
-                                        roleStr -> roleRepository.findByName(ERole.valueOf(roleStr))
-                                                .switchIfEmpty(Mono.error(new IllegalStateException(
-                                                        "Rol no encontrado: " + roleStr))));
+                                .flatMap(role -> switch (role) {
+                                    case "admin" -> roleRepository.findByName(ERole.ROLE_ADMIN)
+                                            .switchIfEmpty(Mono.error(
+                                                    new IllegalStateException(
+                                                            "No se encontró el rol ROLE_ADMIN")));
+                                    case "mod" -> roleRepository.findByName(ERole.ROLE_MODERATOR)
+                                            .switchIfEmpty(Mono.error(
+                                                    new IllegalStateException(
+                                                            "No se encontró el rol ROLE_MODERATOR")));
+                                    case "supp" -> roleRepository.findByName(ERole.ROLE_SUPERVISOR)
+                                            .switchIfEmpty(Mono.error(
+                                                    new IllegalStateException(
+                                                            "No se encontró el rol ROLE_SUPERVISOR")));
+                                    default -> roleRepository.findByName(ERole.ROLE_USER)
+                                            .switchIfEmpty(Mono.error(new IllegalStateException(
+                                                    "No se encontró el rol ROLE_USER")));
+                                });
                     }
 
                     return rolesFlux.collectList()
