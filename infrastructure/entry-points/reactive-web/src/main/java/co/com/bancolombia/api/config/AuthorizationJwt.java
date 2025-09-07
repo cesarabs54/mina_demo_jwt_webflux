@@ -48,7 +48,7 @@ public class AuthorizationJwt {
                 .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
                 .authorizeExchange(auth -> auth
-                        .pathMatchers("/auth/**", "/test/**", "/configuration/**", "/actuator/info")
+                        .pathMatchers("/auth/**", "/test/**", "/oauth/**", "/actuator/info")
                         .permitAll()
                         .pathMatchers("/v3/api-docs", "/webjars/**", "/swagger-ui/**",
                                 "/v3/api-docs/**")

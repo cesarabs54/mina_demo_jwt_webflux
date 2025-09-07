@@ -16,8 +16,11 @@ import co.com.bancolombia.model.dtos.RegisterCommand;
 import co.com.bancolombia.usecase.AuthenticateUserUseCase;
 import co.com.bancolombia.usecase.LogoutUserUseCase;
 import co.com.bancolombia.usecase.RegisterUserUseCase;
+import co.com.bancolombia.usecase.api.security.ClientUseCase;
 import co.com.bancolombia.usecase.api.security.RefreshAccessTokenUseCase;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.server.ServerRequest;
@@ -33,6 +36,7 @@ public class AuthHandler {
     private final RegisterUserUseCase registerUserUseCase;
     private final RefreshAccessTokenUseCase refreshAccessTokenUseCase;
     private final LogoutUserUseCase logoutUserUseCase;
+    private final ClientUseCase clientUseCase;
     private final ObjectMapper objectMapper;
 
     public Mono<ServerResponse> authenticateUser(ServerRequest request) {
@@ -82,4 +86,49 @@ public class AuthHandler {
                         .contentType(APPLICATION_JSON)
                         .bodyValue(new MessageResponse("Log out successful!")));
     }
+
+    public Mono<ServerResponse> oauthToken(ServerRequest request) {
+        return request.formData()
+                .flatMap(form -> {
+                    String grantType = form.getFirst("grant_type");
+                    UUID clientId = UUID.fromString(
+                            Objects.requireNonNull(form.getFirst("client_id")));
+                    String clientSecret = form.getFirst("client_secret");
+
+                    assert grantType != null;
+                    return switch (grantType) {
+                        case "password" -> {
+                            // Reusar authenticateUserUseCase
+                            var login = new AuthRequest(form.getFirst("username"),
+                                    form.getFirst("password"));
+                            yield authenticateUserUseCase.execute(login)
+                                    .map(authResponse -> objectMapper.convertValue(authResponse,
+                                            JwtResponse.class))
+                                    .flatMap(jwtResponse -> ServerResponse.ok()
+                                            .contentType(APPLICATION_JSON)
+                                            .bodyValue(jwtResponse));
+                        }
+                        case "client_credentials" ->
+                            // Validar client_id y client_secret contra tabla oauth_clients
+                                clientUseCase.validateClientCredentials(clientId, clientSecret)
+                                        .flatMap(clientUseCase::generateClientToken)
+                                        .flatMap(token -> ServerResponse.ok()
+                                                .contentType(APPLICATION_JSON)
+                                                .bodyValue(token));
+                        case "refresh_token" -> {
+                            // Reusar refreshAccessTokenUseCase
+                            var refreshRequest = new RefreshAccessTokenRequest(
+                                    form.getFirst("refresh_token"));
+                            yield refreshAccessTokenUseCase.execute(refreshRequest)
+                                    .flatMap(token -> ServerResponse.ok()
+                                            .contentType(APPLICATION_JSON)
+                                            .bodyValue(token));
+                        }
+                        default -> ServerResponse.badRequest()
+                                .bodyValue(new MessageResponse("Unsupported grant_type"));
+                    };
+                });
+    }
+
+
 }

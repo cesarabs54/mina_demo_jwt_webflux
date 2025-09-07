@@ -1,5 +1,6 @@
 package co.com.bancolombia.config;
 
+import co.com.bancolombia.model.gateways.ClientRepository;
 import co.com.bancolombia.model.gateways.JwtGateway;
 import co.com.bancolombia.model.gateways.PasswordEncoderService;
 import co.com.bancolombia.model.gateways.RefreshTokenRepository;
@@ -10,6 +11,7 @@ import co.com.bancolombia.usecase.GetUserByUsernameUseCase;
 import co.com.bancolombia.usecase.LogoutUserUseCase;
 import co.com.bancolombia.usecase.RegisterUserUseCase;
 import co.com.bancolombia.usecase.api.security.AuthenticateUserUseCaseImpl;
+import co.com.bancolombia.usecase.api.security.ClientUseCase;
 import co.com.bancolombia.usecase.api.security.CreateRefreshTokenUseCase;
 import co.com.bancolombia.usecase.api.security.GetUserByUsernameUseCaseImpl;
 import co.com.bancolombia.usecase.api.security.JwtUseCase;
@@ -83,5 +85,10 @@ public class UseCasesConfig {
             JwtGateway jwtGateway
     ) {
         return new RefreshAccessTokenUseCase(refreshTokenUseCase, jwtGateway);
+    }
+
+    @Bean
+    public ClientUseCase clientUseCase(ClientRepository clientRepository, JwtGateway jwtGateway) {
+        return new ClientUseCase(clientRepository, jwtGateway);
     }
 }

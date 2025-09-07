@@ -113,6 +113,33 @@ public class RouterRest {
                                     )
                             }
                     )
+            ),
+            // --- OAUTH2 TOKEN (password, client_credentials, refresh_token) ---
+            @RouterOperation(
+                    path = "/oauth/token",
+                    beanClass = AuthHandler.class,
+                    beanMethod = "oauthToken",
+                    operation = @Operation(
+                            summary = "Obtener token OAuth2",
+                            description = "Soporta grant_type=password, client_credentials y refresh_token",
+                            requestBody = @RequestBody(
+                                    description = "Parámetros del token request",
+                                    required = true,
+                                    content = @Content(
+                                            mediaType = "application/x-www-form-urlencoded"
+                                    )
+                            ),
+                            responses = {
+                                    @ApiResponse(
+                                            responseCode = "200",
+                                            description = "Token generado",
+                                            content = @Content(schema = @Schema(
+                                                    example = "{ \"access_token\": \"xxx\", \"token_type\": \"Bearer\", \"expires_in\": 3600, \"scope\": \"read write\" }"
+                                            ))
+                                    ),
+                                    @ApiResponse(responseCode = "400", description = "Parámetros inválidos")
+                            }
+                    )
             )
     })
     public RouterFunction<ServerResponse> authRoutes(AuthHandler handler) {
@@ -121,6 +148,7 @@ public class RouterRest {
                 .POST("/auth/signup", handler::registerUser)
                 .POST("/auth/refresh", handler::refreshToken)
                 .POST("/auth/logout", handler::logoutUser)
+                .POST("/oauth/token", handler::oauthToken) // 👈 nuevo endpoint OAuth2
                 .build();
     }
 }
